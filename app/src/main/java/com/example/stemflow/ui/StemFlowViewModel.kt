@@ -16,6 +16,7 @@ import com.example.stemflow.model.StemFlowAnalysis
 import com.example.stemflow.model.StemType
 import com.example.stemflow.pipeline.BenchmarkSuite
 import com.example.stemflow.pipeline.StemFlowPipeline
+import com.example.stemflow.pipeline.StemFlowProcessingService
 import com.example.stemflow.separator.ModelManager
 import com.example.stemflow.transcriber.BasicPitchEngine
 import kotlinx.coroutines.Job
@@ -152,6 +153,13 @@ class StemFlowViewModel(application: Application) : AndroidViewModel(application
                 )
                 _activeJob.value = newJob
 
+                // Launch foreground service to guarantee processing survives background/lock screen
+                try {
+                    StemFlowProcessingService.startProcessing(getApplication(), newJob.id)
+                } catch (e: Exception) {
+                    // Running in test or restricted environment
+                }
+
                 val completed = StemFlowPipeline.executeJob(
                     context = getApplication(),
                     jobRepository = repository,
@@ -180,6 +188,11 @@ class StemFlowViewModel(application: Application) : AndroidViewModel(application
 
     fun cancelPipeline() {
         pipelineJob?.cancel()
+        try {
+            StemFlowProcessingService.cancelProcessing(getApplication())
+        } catch (e: Exception) {
+            // Service not active or restricted environment
+        }
         viewModelScope.launch {
             repository.cancelJobs()
             _currentPhase.value = "CANCELLED"
