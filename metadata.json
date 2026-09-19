@@ -1,0 +1,6 @@
+{
+  "name": "StemFlow",
+  "description": "Native 6-stem neural audio separation and polyphonic MIDI transcription pipeline",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
